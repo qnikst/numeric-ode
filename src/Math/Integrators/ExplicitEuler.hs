@@ -1,4 +1,9 @@
+{-# LANGUAGE FlexibleContexts #-}
 module Math.Integrators.ExplicitEuler
+    where
 
-explicitEuler :: Double -> (a -> a) -> a -> a
-explicitEuler h f y = y+h * (f y)
+import Math.Integrators.Internal
+import Data.VectorSpace
+
+explicitEuler :: (VectorSpace a, Floating (Scalar a)) => (a -> a) -> Integrator a
+explicitEuler f = \h y -> y ^+^ ((realToFrac h) *^ (f y))
