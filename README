@@ -1,0 +1,5 @@
+Small project for different ODE solvers for haskell
+This project aims to create structure preserving algothims for solid body systems.
+
+Current status:
+	toy methods and basic API created
