@@ -16,6 +16,16 @@ cabal-version:       >=1.8
 
 library
   hs-source-dirs:   src
-  -- exposed-modules:     
+  exposed-modules:     
+    Math.Integrators
+    Math.Integrators.ExplicitEuler
+    Math.Integrators.ImplicitEuler
+    Math.Integrators.ImplicitMidpointRule
+    Math.Integrators.SympleticEuler
   -- other-modules:       
-  -- build-depends:       
+  build-depends:       base>=4,
+                       vector>=0.9 && <1.0,
+                       vector-space>=0.8 && <0.9,
+                       parallel>=3.2 && <3.3,
+                       primitive>=0.4 && <0.5
+
