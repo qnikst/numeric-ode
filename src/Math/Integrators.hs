@@ -1,7 +1,8 @@
+-- | Math integrators if a high level module for different ODE integrators
+
 module Math.Integrators 
     where
 
-import Data.Default
 import Data.Vector (Vector,(!))
 import Data.Vector.Mutable
 import Control.Monad.Primitive
@@ -9,9 +10,15 @@ import Control.Monad (liftM2)
 import qualified Data.Vector as V
 
 import Math.Integrators.Internal
---type Integrator a = Double -> a -> a
 
-integrateV :: PrimMonad m => Integrator a -> a -> Vector Double -> m (Vector a)
+{-|
+ Integrate ODE equation using fixed steps set by a vector, and returns a vector
+ It takes Vector of time points as a parameter and returns a vector of results
+ -}
+integrateV :: PrimMonad m => Integrator a       -- ^ Internal integrator
+                          -> a                  -- ^ initial  value
+                          -> Vector Double      -- ^ vector of time points
+                          -> m (Vector a)       -- ^ vector of solution
 integrateV integrator initial times = do
     out <- new (V.length times) 
     write out 0 initial
@@ -25,7 +32,3 @@ integrateV integrator initial times = do
             write out i y'
             compute y' (i+1) out
 
-{-
-integrateArray :: (a -> b) -> (Array a) -> a -> Integrator a -> Array (a,b)
-integrateArray f ts x0 = do
--}   

@@ -2,11 +2,10 @@
 module Math.Integrators.Internal
     where
 
---import Data.VectorSpace
-
--- | Integrator function
---
---    \Phi [h] |-> y_n -> y_{n+1}
--- 
-type Integrator a = Double -> a -> a
+{- | Integrator function
+ -   \Phi [h] |->  y_0 -> y_1
+ -}
+type Integrator a = Double  -- ^ Step
+                  -> a      -- ^ Initial value
+                  -> a      -- ^ Next value
 
