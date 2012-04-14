@@ -1,5 +1,6 @@
 -- | Math integrators if a high level module for different ODE integrators
-
+--   This module provides high-level wrappers over different integration methods
+--
 module Math.Integrators 
     where
 
@@ -13,6 +14,7 @@ import Math.Integrators.Internal
 
 {-|
  Integrate ODE equation using fixed steps set by a vector, and returns a vector
+ of solutions corrensdonded to times that was requested.
  It takes Vector of time points as a parameter and returns a vector of results
  -}
 integrateV :: PrimMonad m => Integrator a       -- ^ Internal integrator
