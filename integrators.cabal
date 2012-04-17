@@ -22,10 +22,14 @@ library
     Math.Integrators.ImplicitEuler
     Math.Integrators.ImplicitMidpointRule
     Math.Integrators.SympleticEuler
+    Math.Integrators.StormerVerlet
+    Math.Integrators.RK
   -- other-modules:       
   build-depends:       base>=4,
                        vector>=0.9 && <1.0,
                        vector-space>=0.8 && <0.9,
                        parallel>=3.2 && <3.3,
+                       parsec  == 3.1.*,
+                       template-haskell,
                        primitive>=0.4 && <0.5
 
