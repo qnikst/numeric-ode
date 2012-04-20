@@ -7,96 +7,42 @@ import Data.Maybe
 import Language.Haskell.TH.Quote
 import Language.Haskell.TH
 
-
-import Text.Parsec
-import qualified Text.Parsec.Token as P
-import Text.Parsec.Language (haskellDef) 
-import Text.Parsec.Expr
-import Text.Parsec.String
-import qualified GHC.Num
-
 import Control.Monad
 
-import Debug.Trace
-
-lexer       = P.makeTokenParser haskellDef { P.reservedOpNames = ["*","/","+","-","sqrt","sin","cos"] }
-
-whiteSpace= P.whiteSpace lexer
-lexeme    = P.lexeme lexer
-symbol    = P.symbol lexer
-float     = P.float lexer
-parens    = P.parens lexer
-semi      = P.semi lexer
-natural   = P.natural lexer
-identifier= P.identifier lexer
-reserved  = P.reserved lexer
-reservedOp= P.reservedOp lexer
-
-expr    :: Parser Double
-expr    = buildExpressionParser table factor
-        <?> "expression"
-factor  =   parens expr
-        <|> try float
-        <|> fmap realToFrac natural
-        <?> "simple expression"
-table   = [ [prefix "-" negate]
-          , [prefix "sqrt" sqrt,prefix "sin" sin,prefix "cos" cos]
-          , [op "*" (*) AssocLeft, op "/" (/) AssocLeft]
-          , [op "+" (+) AssocLeft, op "-" (-) AssocLeft]
-          ]          
-          where
-             op s f assoc = Infix (do{ reservedOp s; return f} <?> "operator") assoc
-             prefix s f   = Prefix (do { reservedOp s; return f} <?> "prefix")
-
-
-erun :: Parser Double -> String -> Double
-erun p input = erun' (do { whiteSpace ; x <- p ; eof; return x})
-    where
-        erun' p' = case (parse p' "" input) of
-                    Left err -> error $ "Parse error at "++(show err)
-                    Right x  -> x
-
-data MExp = Delimeter | Row (Maybe Double,[Double]) deriving (Show,Eq)
-
-rowRhs (Row (_,ls)) = ls
-rowRhs _ = error "no a row"
-
-
-valuesFromString :: String -> [MExp]
-valuesFromString = 
-    mapMaybe go . lines
-    where
-        go ('-':s) = Just Delimeter
-        go ('#':s) = Nothing
-        go (ls) | null.filter (==' ')$ ls = Nothing
-                | otherwise = 
-            let (lhs,_:rhs) = span (/='|') ls
-                l = case filter (/= ' ') lhs of
-                        "" -> Nothing
-                        ls -> Just $! erun expr ls
-            in Just $ Row (l, map (erun expr) $! grp '&' rhs)
-        grp c s = case dropWhile (==c) s of
-            "" -> []
-            s' -> if any (/=' ') w then w : grp c c'' else grp c c''
-                  where (w,c'') = break (==c) s'
+import Math.Integrators.RK.Types
+import Math.Integrators.RK.Internal
+import Math.Integrators.RK.Parser
 
 
 qrk  :: QuasiQuoter
 qrk  =  QuasiQuoter {quoteExp = x}
     where
-        x s = case () of
-                _ | trace (show $ valuesFromString s) False -> undefined
-                _ -> rk $ valuesFromString s
+        x s = rk $! readMatrixTable s
 
-jv = Just . VarE
-jld = Just . LitE. {-DoublePrimL-} RationalL . toRational
+-----------------------------------------------------------
+-- List of helpers
+jv    = Just . VarE
+jv'   = Just . varE
+jld   = Just . LitE. {-DoublePrimL-} RationalL . toRational
 ld    = LitE . RationalL . toRational
 plus  = VarE $! mkName "+"
 vplus = VarE $! mkName "^+^"
 vmult = VarE $! mkName "*^"
 mult  = VarE $! mkName "*"
+ld'   = litE . RationalL . toRational
+plus' = varE $! mkName "+"
+vplus'= varE $! mkName "^+^"
+vmult'= varE $! mkName "*^"
+mult' = varE $! mkName "*"
+vN s = varE (mkName s)
 
+foldOp op = foldl1 (\x y -> infixE (Just x) op (Just y))
 
+realToFracN = varE (mkName "realToFrac")
+f = mkName "f"
+t = mkName "t"
+h = mkName "h"
+y = mkName "y"
 
 rk :: [MExp] -> Q Exp
 rk mExp = do
@@ -145,8 +91,136 @@ rk mExp = do
                           )
                         ]
 
+
+test = [Row (Just 1,[2,3]),Row (Just 4,[5,6]),Delimeter, Row (Nothing, [7,8])]
+
+irk mExp = do
+    let lena     = length "ab"
+        tpy      = mkName "tpy"
+        f        = mkName "f"
+        h        = mkName "h"
+        t        = mkName "t"
+        y        = mkName "y"
+    fpoint' <- fpoint mExp
+    lamE [varP tpy, varP f, varP h, tupP [varP t,varP y]] $ 
+        caseE (varE tpy) [match (varP $ mkName "Math.Integrators.RK.Types.FixedPoint breakRule") 
+                                (normalB (fpointRun mExp))  
+                                fpoint'
+                         ,match (varP $ mkName "Math.Integrators.RK.Types.NewtonIteration") (normalB (varE $ mkName "undefined")) []
+                         ]
+
+fpointRun mExp = do
+    let (ab,_:(Row (_,ls)):[]) = break (==Delimeter) mExp
+        lenA     = length ab
+    zs <- forM [1..lenA] (\_ -> newName "z")
+    letE [valD   (tupP $ map varP zs)
+                 (normalB $ 
+                     appE 
+                        (appE 
+                            (appE 
+                                (varE $! mkName "Math.Integrators.Implicit.fixedPointSolver") 
+                                (varE $! mkName "method")
+                            ) 
+                            (varE $ mkName "breakRule")
+                        ) 
+                        (tupE $ map (litE . RationalL) $ replicate lenA 0) {- TODO: give avaliability to user -}
+                     ) 
+                  []]
+         (appE (varE (mkName "solution")) (tupE $ map varE zs))
+
+fpoint mExp = do
+    let (ab,_:(Row (_,ls)):[]) = break (==Delimeter) mExp
+        lenA     = length ab
+    zs <- forM [1..lenA] (\_ -> newName "z")
+
+    return $ 
+        [ funD (mkName "method") [clause [varP y] (normalB $ letE (map (topRow zs) $! zip zs ab) (tupE $ map varE zs)) [] ]
+        , funD (mkName "solution") [clause [tupP $ map varP zs] (normalB $ solutionRow zs ls) []]
+        ]
+    where
+        topRow zs (x,(Row (Just c,ls))) = 
+            valD (varP x) 
+                 (normalB $ infixE (jv' h) 
+                         vmult'
+                         (Just $ foldOp vplus' $
+                                    zipWith (\z l -> infixE (Just $ appE realToFracN (ld' l))
+                                                            vmult'
+                                                            (Just $ appE (appE (varE f) 
+                                                                             (infixE (jv' t) 
+                                                                                     plus' 
+                                                                                     (Just $ infixE (jv' h) mult' (Just $ ld' c))
+                                                                              )
+                                                                          )
+                                                                          (infixE (jv' y) vplus' (jv' z))
+                                                            )
+                                            )
+                                            zs
+                                            ls
+                        )
+                 )
+                []
+        solutionRow zs ls = 
+                (tupE [infixE (jv' t) plus' (jv' h)
+                      ,infixE (jv' y) 
+                            vplus' 
+                            (Just $ infixE (jv' h) 
+                                vmult'
+                                (Just $ foldOp vplus' 
+                                          (zipWith (\z b -> infixE (Just $ appE realToFracN 
+                                                                                (ld' b))
+                                                                   vmult'
+                                                                   (jv' z))
+                                                   zs
+                                                   ls
+                                          ) 
+                                )
+                            )
+                      ]
+                  )
+        {-
+        
+        method = do 
+            let (ab,_:(Row (_,ls)):[]) = break (==Delimeter) mExp
+                lenA     = length ab
+            zs <- forM [1..lenA] (\_ -> newName "z")
+            letE 
+                [ funD (mkName "mymethod") 
+                , valD (tupP $ map varP zs) 
+                       (normalB $ 
+                        appE 
+                            (appE 
+                                (appE 
+                                    (varE $! mkName "Math.Integrators.Implicit.fixedPointSolver") 
+                                    (appE (varE $! mkName "mymethod") (varE t))
+                                ) 
+                                (varE $ mkName "breakRule")
+                            ) 
+                            (tupE $ map (litE . RationalL) $ replicate lenA 0) {- TODO: give avaliability to user -}
+                        ) 
+                        [] 
+                ] (tupE [infixE (jv' t) plus' (jv' h)
+                        ,infixE (jv' y) 
+                                vplus' 
+                                (Just $ infixE (jv' h) 
+                                        vmult'
+                                        (Just $ foldl1 (\x y -> infixE (Just x) vplus' (Just y)) 
+                                                       (zipWith (\z b -> infixE (Just $ appE (varE $ mkName "realToFrac")
+                                                                                             (ld' b))
+                                                                                vmult'
+                                                                                (jv' z))
+                                                                zs
+                                                                ls
+                                                        )
+                                        )
+                                )
+                        ]
+                  )
+        -}
+    {-
+     - Z_in = h * a_j f^j (t_j, k_j)
+     -}
 {-
-implicit = \f implicit (t,y) -> 
+implicit = \t f implicit (t,y) -> 
     let (z1,z2,...zN) = implicit
                             (\(z1,z2..zN) ->
                                 let z1' = if (z1 > eps) then h * sum (a_{ij} f (y+z1)) else z1
