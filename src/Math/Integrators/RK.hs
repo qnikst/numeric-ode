@@ -7,11 +7,11 @@ module Math.Integrators.RK
       rk45
     , rk46
       -- * implicit methods
-{-    , gauss4
+    , gauss4
     , gauss6
     , lobattoIIIA4
     , lobattoIIIA6
-    , lobattoIIIB4-}
+    , lobattoIIIB4
     )
 	where
 
