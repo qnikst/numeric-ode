@@ -39,74 +39,61 @@ vN s = varE (mkName s)
 foldOp op = foldl1 (\x y -> infixE (Just x) op (Just y))
 
 realToFracN = varE (mkName "realToFrac")
+zeroVN       = varE (mkName "zeroV")
 f = mkName "f"
 t = mkName "t"
 h = mkName "h"
 y = mkName "y"
+tpy      = mkName "tpy"
 
 rk :: [MExp] -> Q Exp
 rk mExp = do
     let (ab,_:c:[]) = break (==Delimeter) mExp
         lenA     = length ab
-    let f = mkName "f"
-        h = mkName "h"
-        t = mkName "t"
-        y = mkName "y"
     kn <- forM [1..lenA] (\_ -> newName "k")
     let kvv = zip kn ab
     ks' <- forM kvv $ \(k,r) -> do
             t <- rkt1 r kn
             return $ ValD (VarP k) (NormalB t) []
     y' <- rkt2 c kn
-    return $ LamE [VarP f, VarP h, TupP [VarP t,VarP y]] $ LetE ks' y'
+    if isExplicit  mExp
+        then return $ LamE [VarP f, VarP h, TupP [VarP t,VarP y]] $ LetE ks' y'
+        else irk mExp
     where 
         rkt1 (Row (Just c,ls)) ks = do
-            let f = mkName "f"
-                h = mkName "h"
-                t = mkName "t"
-                y = mkName "y"
-            let ft = InfixE (jv t) plus (Just $ InfixE (jld c) mult (jv h))
+            let ft = infixE (jv' t) plus' (Just $ infixE (Just $ ld' c) mult' (jv' h))
                 st = if null ls 
-                        then (VarE y)
+                        then (varE y)
                         else
-                            InfixE (jv y) vplus
-                                (Just $ InfixE (Just $ AppE (VarE $ mkName "realToFrac") (VarE h)) (vmult)
-                                    (Just $ foldl1 (\x y -> InfixE (Just x) vplus (Just y)) $
-                                                zipWith (\k l -> InfixE (Just $ AppE (VarE $ mkName "realToFrac") (ld l)) vmult (jv k)) ks ls
+                            infixE (jv' y) vplus'
+                                (Just $ infixE (Just $ appE realToFracN (varE h)) vmult'
+                                    (Just $ foldOp vplus' $
+                                                zipWith (\k l -> infixE (Just $ appE realToFracN (ld' l)) vmult' (jv' k)) 
+                                                        ks 
+                                                        ls
                                     )
                                 )
-            return $ AppE ( AppE (VarE f) ft) st
+            appE (appE (varE f) ft) st
         rkt2 (Row (_,ls)) ks = do
-            let f = mkName "f"
-                y = mkName "y"
-                h = mkName "h"
-                t = mkName "t"
-            return $ TupE 
-                        [ InfixE (jv t) plus (jv h)
-                        , InfixE (jv y) vplus
-                          (Just $ InfixE (Just $ AppE (VarE $ mkName "realToFrac") (VarE h)) vmult
-                            (Just $ foldl1 (\x y -> InfixE (Just x) vplus (Just y)) $
-                                        zipWith (\k l -> InfixE (Just $ AppE (VarE $ mkName "realToFrac") (ld l)) vmult (jv k)) ks ls
+            tupE [ infixE (jv' t) plus' (jv' h)
+                 , infixE (jv' y) vplus'
+                      (Just $ infixE (Just $ appE realToFracN (varE h)) vmult'
+                            (Just $ foldOp vplus' $
+                                        zipWith (\k l -> infixE (Just $ appE realToFracN (ld' l)) vmult' (jv' k)) ks ls
                             )
-                          )
-                        ]
+                      )
+                ]
 
 
 test = [Row (Just 1,[2,3]),Row (Just 4,[5,6]),Delimeter, Row (Nothing, [7,8])]
 
 irk mExp = do
-    let lena     = length "ab"
-        tpy      = mkName "tpy"
-        f        = mkName "f"
-        h        = mkName "h"
-        t        = mkName "t"
-        y        = mkName "y"
     fpoint' <- fpoint mExp
     lamE [varP tpy, varP f, varP h, tupP [varP t,varP y]] $ 
-        caseE (varE tpy) [match (varP $ mkName "Math.Integrators.RK.Types.FixedPoint breakRule") 
+        caseE (varE tpy) [match (conP (mkName "Math.Integrators.RK.Types.FixedPoint") [varP $ mkName "breakRule"])
                                 (normalB (fpointRun mExp))  
                                 fpoint'
-                         ,match (varP $ mkName "Math.Integrators.RK.Types.NewtonIteration") (normalB (varE $ mkName "undefined")) []
+                         ,match (conP (mkName "Math.Integrators.RK.Types.NewtonIteration") []) (normalB (varE $ mkName "undefined")) []
                          ]
 
 fpointRun mExp = do
@@ -123,7 +110,7 @@ fpointRun mExp = do
                             ) 
                             (varE $ mkName "breakRule")
                         ) 
-                        (tupE $ map (litE . RationalL) $ replicate lenA 0) {- TODO: give avaliability to user -}
+                        (tupE $ replicate lenA zeroVN) {- TODO: give avaliability to user -}
                      ) 
                   []]
          (appE (varE (mkName "solution")) (tupE $ map varE zs))
@@ -132,15 +119,16 @@ fpoint mExp = do
     let (ab,_:(Row (_,ls)):[]) = break (==Delimeter) mExp
         lenA     = length ab
     zs <- forM [1..lenA] (\_ -> newName "z")
+    zs' <- forM [1..lenA] (const $ newName "z'")
 
     return $ 
-        [ funD (mkName "method") [clause [varP y] (normalB $ letE (map (topRow zs) $! zip zs ab) (tupE $ map varE zs)) [] ]
+        [ funD (mkName "method") [clause [tupP $ map varP zs] (normalB $ letE (map (topRow zs) $! zip zs' ab) (tupE $ map varE zs')) [] ]
         , funD (mkName "solution") [clause [tupP $ map varP zs] (normalB $ solutionRow zs ls) []]
         ]
     where
         topRow zs (x,(Row (Just c,ls))) = 
             valD (varP x) 
-                 (normalB $ infixE (jv' h) 
+                 (normalB $ infixE (Just $ appE realToFracN (varE h)) 
                          vmult'
                          (Just $ foldOp vplus' $
                                     zipWith (\z l -> infixE (Just $ appE realToFracN (ld' l))
@@ -148,7 +136,7 @@ fpoint mExp = do
                                                             (Just $ appE (appE (varE f) 
                                                                              (infixE (jv' t) 
                                                                                      plus' 
-                                                                                     (Just $ infixE (jv' h) mult' (Just $ ld' c))
+                                                                                     (Just $ infixE (Just $ appE realToFracN $ varE h) mult' (Just $ ld' c))
                                                                               )
                                                                           )
                                                                           (infixE (jv' y) vplus' (jv' z))
@@ -163,7 +151,7 @@ fpoint mExp = do
                 (tupE [infixE (jv' t) plus' (jv' h)
                       ,infixE (jv' y) 
                             vplus' 
-                            (Just $ infixE (jv' h) 
+                            (Just $ infixE (Just $ appE realToFracN $ varE h) 
                                 vmult'
                                 (Just $ foldOp vplus' 
                                           (zipWith (\z b -> infixE (Just $ appE realToFracN 

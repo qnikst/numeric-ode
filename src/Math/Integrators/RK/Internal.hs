@@ -1,5 +1,6 @@
 module Math.Integrators.RK.Internal
     ( MExp(..)
+    , isExplicit
     )
     where
 

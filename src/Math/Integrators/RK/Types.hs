@@ -3,7 +3,4 @@ module Math.Integrators.RK.Types
 
 
 -- | type implicit solver
-data ImplicitRkType = FixedPoint | NewtonIteration
-                    deriving (Eq,Show)
-
-
+data ImplicitRkType a = FixedPoint (Int -> a -> a -> Bool) | NewtonIteration
