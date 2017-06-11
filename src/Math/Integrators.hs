@@ -7,7 +7,6 @@ module Math.Integrators
 import Data.Vector (Vector,(!))
 import Data.Vector.Mutable
 import Control.Monad.Primitive
-import Control.Monad (liftM2)
 import qualified Data.Vector as V
 
 import Math.Integrators.Internal

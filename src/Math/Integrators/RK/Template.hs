@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -Wwarn #-} -- this module will be removed in future versions
 module Math.Integrators.RK.Template
     where
 
@@ -147,6 +148,7 @@ fpoint mExp = do
                         )
                  )
                 []
+        topRow _ _ = error "not a row"
         solutionRow zs ls = 
                 (tupE [infixE (jv' t) plus' (jv' h)
                       ,infixE (jv' y) 

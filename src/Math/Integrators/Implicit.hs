@@ -30,13 +30,12 @@ type ImplicitSolver a = (a -> a)                    -- ^ implicit method
 -- | Fixed point method it iterates function f until it will break "" will
 -- be reached then it returns one but last iteration
 --
-{-# DEPRECATED fixedPoint "will be removed in future versions" #-}
 fixedPointSolver :: ImplicitSolver a
-fixedPointSolver f break y0 = inner 0 y0
+fixedPointSolver f break' y0 = inner 0 y0
     where 
         inner i y = let y' = f y
                         i' = i+1
-                    in if break i y y'
+                    in if break' i y y'
                            then y'
                            else inner i' y'
 
@@ -44,13 +43,11 @@ fixedPoint :: (a -> a)            -- ^ function
               -> (a -> a -> Bool) -- ^ break rule
               -> a                -- ^ initial value
               -> a                -- ^ result
-fixedPoint f break y0 = 
+fixedPoint f break' y0 = 
     let y1 = f y0
-    in if break y0 y1
+    in if break' y0 y1
         then y0
-        else fixedPoint f break y1
-maxSteps :: Int -> (a -> a -> Bool) -> (Int -> a -> a -> Bool)
-maxSteps n f = \i y y' -> (i>n) || f y y'
+        else fixedPoint f break' y1
 
 -- | simple break rule that will break evaluatioin when value less then Eps
 breakNormR :: Double -> Double -> Bool

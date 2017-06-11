@@ -2,12 +2,12 @@
 module Math.Integrators.ImplicitMidpointRule
     where
 
-import Data.Function
 import Data.VectorSpace
 
 import Math.Integrators.Implicit
 import Math.Integrators.Internal
 
+eps :: Double
 eps = 1e-14::Double
 
 imr :: (VectorSpace a, Floating (Scalar a)) => (a -> a) -> (a -> Double) -> Integrator a

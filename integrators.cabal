@@ -25,9 +25,17 @@ library
     Math.Integrators.StormerVerlet
     Math.Integrators.StormerVerletAlt
     Math.Integrators.RK
+    Math.Integrators.Implicit
+    Math.Integrators.Internal
+    Math.Integrators.RK.Internal
+    Math.Integrators.RK.Parser
+    Math.Integrators.RK.Template
+    Math.Integrators.RK.Types
+
+  ghc-options:         -Wall
   -- other-modules:
   build-depends:       base>=4,
-                       vector>=0.9 && <1.0,
+                       vector>=0.9 && <1.1,
                        vector-space>=0.8 && <0.11,
                        parallel>=3.2 && <3.3,
                        parsec  == 3.1.*,
@@ -35,3 +43,7 @@ library
                        linear,
                        lens,
                        primitive>=0.4 && <0.7
+  other-extensions:    TypeFamilies
+                       FlexibleContexts
+                       BangPatterns
+                       QuasiQuotes

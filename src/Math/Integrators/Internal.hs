@@ -1,4 +1,3 @@
-{-# LANGUAGE RankNTypes #-}
 module Math.Integrators.Internal
     where
 

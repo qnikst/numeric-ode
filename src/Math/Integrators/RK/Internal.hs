@@ -12,7 +12,3 @@ isExplicit :: [MExp] -> Bool
 isExplicit  = (all (\(i,(Row (_,x))) -> i> length x)) . (zip [1..]) . top
     where 
         top = takeWhile (/= Delimeter) 
-
--- | helpers to work with data
-rowRhs (Row (_,ls)) = ls
-rowRhs _ = error "no a row"

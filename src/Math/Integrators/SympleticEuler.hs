@@ -1,7 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 module Math.Integrators.SympleticEuler
     where
-import Data.Function
 import Data.VectorSpace
 
 import Math.Integrators.Implicit

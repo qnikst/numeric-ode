@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wwarn #-} -- We need this option, because we want to remove this module in future
 module Math.Integrators.RK.Parser
     ( readMatrixTable
     )
@@ -39,7 +40,6 @@ lexeme    = P.lexeme lexer
 symbol    = P.symbol lexer
 float     = P.float lexer
 parens    = P.parens lexer
-semi      = P.semi lexer
 natural   = P.natural lexer
 identifier= P.identifier lexer
 reserved  = P.reserved lexer

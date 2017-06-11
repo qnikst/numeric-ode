@@ -1,4 +1,5 @@
 {-# LANGUAGE QuasiQuotes, FlexibleContexts #-}
+{-# OPTIONS_GHC -Wwarn #-}
 -- | Runge-Kutta module 
 --   TODO: add description and history notes
 --   add informations about methods properties
