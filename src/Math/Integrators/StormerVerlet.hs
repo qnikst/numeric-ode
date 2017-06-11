@@ -1,27 +1,43 @@
 {-# LANGUAGE FlexibleContexts #-}
--- | Stormer-Verlet has next properties
+-- |
+-- Module: Math.Integrators.StormerVerlet
 --
---      * the method is of order 2
+-- Stormer-Verlet has following properties
 --
---      * this is sympletic method
+--  * the method is of order 2
+--  * this is sympletic method
+--  * method is symmetric
+--  * this method excatly conserves quadratic first integrals \(p^T C\) (angular momentum of \(N\)-body system)
 --
---      * method is symmetric
---
---      * ? for separate Hamiltonians T(p) + U(v) this method is explicit //not in code
---
---      * this method excatly conserves quadratic first integrals $p^T C$ (angular momentum of N-body system)
---
-
-
 module Math.Integrators.StormerVerlet
-    where
+    ( oneStepH98
+    , stormerVerlet2
+    ) where
 
 import Linear
 import Control.Lens
 
+-- | Stormer-Verlet integration scheme for systems of the form
+oneStepH98 :: (Applicative f, Num (f a), Fractional a) =>
+              a            -- ^ Step size
+           -> (f a -> f a) -- ^ \(\frac{\partial H}{\partial q}\)
+           -> (f a -> f a) -- ^ \(\frac{\partial H}{\partial p}\)
+           -> V2 (f a)     -- ^ Current \((p, q)\) as a 2-dimensional vector
+           -> V2 (f a)     -- ^ New \((p, q)\) as a 2-dimensional vector
+oneStepH98 hh nablaQ nablaP prev = V2 qNew pNew
+  where
+    h2   = hh / 2
+    hhs  = pure hh
+    hh2s = pure h2
+    qsPrev = prev ^. _x
+    psPrev = prev ^. _y
+    pp2  = psPrev - hh2s * nablaQ qsPrev
+    qNew = qsPrev + hhs * nablaP pp2
+    pNew = pp2 - hh2s * nablaQ qNew
+
 -- | Stormer-Verlet integration scheme for system: 
 --      
---      q'' = f(q)
+--   \[   q'' = f(q) \]
 --
 stormerVerlet2 :: (Applicative f, Num (f a), Fractional a)
                => (f a -> f a)              -- ^ function f
