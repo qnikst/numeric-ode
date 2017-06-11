@@ -1,0 +1,4 @@
+cabal.project.local
+.stack-work/
+.dist
+dist-newstyle
