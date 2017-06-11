@@ -16,23 +16,23 @@
 module Math.Integrators.StormerVerlet
     where
 
-import Data.AdditiveGroup
-import Data.VectorSpace
-
-import Math.Integrators.Internal
-
+import Linear
+import Control.Lens
 
 -- | Stormer-Verlet integration scheme for system: 
 --      
 --      q'' = f(q)
 --
-stormerVerlet2 :: (VectorSpace a, Floating (Scalar a)) => (a -> a)              -- ^ function f
-                                                       -> Integrator (a,a)      -- ^ output integrator
-stormerVerlet2 f = \h (p,q) -> 
-    let h'  = realToFrac h
-        h2' = realToFrac $! 0.5 *h
-        p1  = p ^+^ (h2') *^ (f q)
-        q'  = q ^+^ h' *^ p1
-        p'  = p1 ^+^ h2' *^ (f q')
-    in (p',q')
+stormerVerlet2 :: (Applicative f, Num (f a), Fractional a)
+               => (f a -> f a)              -- ^ function f
+               -> a
+               -> V2 (f a)
+               -> V2 (f a)
+stormerVerlet2 f h prev =
+    let h'  = h
+        h2' = 0.5 *h
+        p1  = prev ^. _x + pure h2' * (f (prev ^. _y))
+        q'  = prev ^. _y + pure h' * p1
+        p'  = p1 + pure h2' * (f q')
+    in V2 p' q'
 
