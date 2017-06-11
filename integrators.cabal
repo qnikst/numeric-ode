@@ -4,32 +4,34 @@
 name:                integrators
 version:             0.1.0.0
 synopsis:            Integrators library
--- description:         
+-- description:
 license:             BSD3
 license-file:        LICENSE
 author:              Alexander V Vershilov
 maintainer:          alexander.vershilov@gmail.com
--- copyright:           
+-- copyright:
 category:            Math
 build-type:          Simple
 cabal-version:       >=1.8
 
 library
   hs-source-dirs:   src
-  exposed-modules:     
+  exposed-modules:
     Math.Integrators
     Math.Integrators.ExplicitEuler
     Math.Integrators.ImplicitEuler
     Math.Integrators.ImplicitMidpointRule
     Math.Integrators.SympleticEuler
     Math.Integrators.StormerVerlet
+    Math.Integrators.StormerVerletAlt
     Math.Integrators.RK
-  -- other-modules:       
+  -- other-modules:
   build-depends:       base>=4,
                        vector>=0.9 && <1.0,
-                       vector-space>=0.8 && <0.9,
+                       vector-space>=0.8 && <0.11,
                        parallel>=3.2 && <3.3,
                        parsec  == 3.1.*,
                        template-haskell,
-                       primitive>=0.4 && <0.5
-
+                       linear,
+                       lens,
+                       primitive>=0.4 && <0.7
