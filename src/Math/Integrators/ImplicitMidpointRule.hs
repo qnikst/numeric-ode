@@ -1,14 +1,19 @@
 {-# LANGUAGE FlexibleContexts #-}
 module Math.Integrators.ImplicitMidpointRule
-    where
+  ( imr
+  ) where
 
-import Data.VectorSpace
+import Linear
 
 import Math.Integrators.Implicit
 import Math.Integrators.Internal
 
-eps :: Double
-eps = 1e-14::Double
+eps :: Floating a => a
+eps = 1e-14
 
-imr :: (VectorSpace a, Floating (Scalar a)) => (a -> a) -> (a -> Double) -> Integrator a
-imr f norm = \h y -> fixedPoint (\x -> y ^+^ (realToFrac h) *^ ( f ( (y^+^x)^/2) )) (\x1 x2 -> breakNormR eps (norm (x1 ^-^ x2))) y
+imr :: (Metric f, Num (f a), Floating a, Ord a)
+    => (f a -> f a) -> a -> f a -> f a
+imr f = \h y ->
+  fixedPoint (\x -> y ^+^ h *^ ( f ( (y^+^x)^/2) ))
+             (\x1 x2 -> breakNormIR (x1 ^-^ x2) eps)
+             y

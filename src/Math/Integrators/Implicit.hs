@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
 -- | Helpers for implicit integration methods
 --
 -- TODO: add possibility to make function to create initial value
@@ -19,7 +19,8 @@ module Math.Integrators.Implicit
     )
     where
 
-import Data.VectorSpace
+import Linear
+import Control.Lens
 
 -- | Implicit solver type
 type ImplicitSolver a = (a -> a)                    -- ^ implicit method
@@ -51,13 +52,13 @@ fixedPoint f break' y0 =
 
 -- | simple break rule that will break evaluatioin when value less then Eps
 breakNormR :: Double -> Double -> Bool
-breakNormR eps y =  y < eps
+breakNormR eps y =  abs y < eps
 
 -- | same as @breakNormR@ but assume that inner type is an 
 -- instance of InnerField, so it's possible to use innerproduct to find norm
 -- N.B function uses $||v||^2 < eps$, so epsilon should be pre evaluated
-breakNormIR :: (InnerSpace a, Scalar a ~ Double) => a -> Double -> Bool
-breakNormIR v eps = (v <.> v) < eps
+breakNormIR :: (Metric f, Floating a, Ord a, Num (f a)) => f a -> a -> Bool
+breakNormIR v eps = quadrance v < eps
 
 
 

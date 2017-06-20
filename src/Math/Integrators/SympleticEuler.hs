@@ -1,20 +1,28 @@
 {-# LANGUAGE FlexibleContexts #-}
 module Math.Integrators.SympleticEuler
     where
-import Data.VectorSpace
+
+import Linear
+import Control.Lens
 
 import Math.Integrators.Implicit
-import Math.Integrators.Internal
-import Control.Parallel
 
-eps :: Double
+eps :: Floating a => a
 eps = 1e-10
 
-sympleticEuler1 ::(VectorSpace a, Floating (Scalar a)) => ((a->a->a),(a->a->a)) -> (a -> Double) -> Integrator (a,a)
-sympleticEuler1 (f,g) norm = \h (u,v) ->
-    let u' = v' `pseq` u ^+^ ( (realToFrac h) *^ (f u v') )
-        v' = fixedPoint (\x -> v ^+^ (realToFrac h) *^ (g u x)) (\x1 x2 -> breakNormR eps (norm (x1^-^x2))) v
-    in (u',v')
+sympleticEuler1 :: (Metric f, Num (f a), Floating a, Ord a)
+                => (f a -> f a -> f a)
+                -> (f a -> f a -> f a) 
+                -> a                     -- ^ Step size
+                -> V2 (f a)              -- ^ Current \((p,q)\) as a 2-dimentional vector
+                -> V2 (f a)              -- ^ New \((p, q)\) as a 2-dimetional vector
+sympleticEuler1 f g = \h prev ->
+        -- explicit coordinate
+    let u' = (prev^._x) ^+^  h *^ (f (prev^._x) v')
+        -- implicit coordinate
+        v' = fixedPoint (\x -> (prev^._y) ^+^ h *^ (g (prev^._x) x))
+                        (\x1 x2 -> breakNormIR (x1^-^x2) eps) (prev^._x)
+    in V2 u' v'
 
 {-
 sEuler2 :: ((a->a->a),(a->a->a)) -> Double -> (a,a) -> (a,a)

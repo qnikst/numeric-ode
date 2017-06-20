@@ -5,24 +5,25 @@
 --   add informations about methods properties
 module Math.Integrators.RK
     ( -- * explicit methods
-      rk45
-    , rk46
-      -- * implicit methods
-    , gauss4
-    , gauss6
-    , lobattoIIIA4
-    , lobattoIIIA6
-    , lobattoIIIB4
-    )
-	where
+--      rk45
+--    , rk46
+--      -- * implicit methods
+--    , gauss4
+--    , gauss6
+--    , lobattoIIIA4
+--    , lobattoIIIA6
+--    , lobattoIIIB4
+    ) where
 
-import Math.Integrators.RK.Template
-import Math.Integrators.RK.Types
-import Math.Integrators.Internal
-import Math.Integrators.Implicit
-import Data.VectorSpace
+-- import Linear
+
+-- import Math.Integrators.RK.Template
+-- import Math.Integrators.RK.Types
+-- import Math.Integrators.Internal
+-- import Math.Integrators.Implicit
 
 
+{-
 rk45 :: (VectorSpace a, Floating (Scalar a)) => (Double -> a -> a) -> Integrator (Double,a)
 rk45 = [qrk|
 0   |
@@ -88,3 +89,4 @@ lobattoIIIB4 = [qrk|
 - - + - - - - - - - - -
     | 1/6 & 2/3  & 1/6
 |]
+-}

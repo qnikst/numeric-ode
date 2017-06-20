@@ -9,11 +9,10 @@
 module Math.Integrators.ExplicitEuler
     where
 
-import Math.Integrators.Internal
-import Data.VectorSpace
+import Linear
 
 -- | Integrator of form
 --
 --  \[ \Phi[h] : y_{n+1} = y_n + h f (y_n) \]
-explicitEuler :: (VectorSpace a, Floating (Scalar a)) => (a -> a) -> Integrator a
-explicitEuler f = \h y -> y ^+^ ((realToFrac h) *^ (f y))
+explicitEuler :: (Num (f a), Floating a, Additive f) => (f a -> f a) -> a -> f a -> f a
+explicitEuler f = \h y -> y ^+^ h *^ (f y)
