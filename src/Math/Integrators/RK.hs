@@ -1,4 +1,4 @@
-{-# LANGUAGE QuasiQuotes, FlexibleContexts #-}
+{-# LANGUAGE TemplateHaskell, FlexibleContexts #-}
 {-# OPTIONS_GHC -Wwarn #-}
 -- | Runge-Kutta module 
 --   TODO: add description and history notes
@@ -17,23 +17,28 @@ module Math.Integrators.RK
 
 -- import Linear
 
--- import Math.Integrators.RK.Template
+import Math.Integrators.RK.Template
 -- import Math.Integrators.RK.Types
 -- import Math.Integrators.Internal
 -- import Math.Integrators.Implicit
 
+-- | Runge-Kutta 
+-- @
+-- 0   |
+-- 0.5 | 0.5
+-- 0.5 | 0   & 0.5
+-- 1   | 0   & 0   & 1
+-- - - + - - - - - - - - 
+--     | 1/6 & 2/6 & 2/6 & 1/6
+-- @
+rk45 = $(generateRK [[0::Double]
+                    ,[0.5, 0.5]
+                    ,[0.5, 0  , 0.5]
+                    ,[1  , 0  , 0  , 1]
+                    ,    [ 1/6,2/6,2/6,1/6]
+                    ])
 
 {-
-rk45 :: (VectorSpace a, Floating (Scalar a)) => (Double -> a -> a) -> Integrator (Double,a)
-rk45 = [qrk|
-0   |
-0.5 | 0.5
-0.5 | 0   & 0.5
-1   | 0   & 0   & 1
-- - + - - - - - - - - 
-    | 1/6 & 2/6 & 2/6 & 1/6
-|]
-
 rk46 :: (VectorSpace a, Floating (Scalar a)) => (Double -> a -> a) -> Integrator (Double,a)
 rk46 = [qrk|
 0   |
