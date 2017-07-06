@@ -46,3 +46,20 @@ library
                        FlexibleContexts
                        BangPatterns
                        QuasiQuotes
+
+executable Kepler
+  hs-source-dirs:      src/Examples
+  main-is:             KeplerProblem.hs
+  ghc-options:
+  build-depends:       base,
+                       integrators,
+                       vector>=0.9 && <1.0,
+                       vector-space>=0.8 && <0.11,
+                       colour,
+                       linear,
+                       data-default-class,
+                       diagrams-lib,
+                       Chart,
+                       Chart-cairo,
+                       data-accessor
+  default-language:    Haskell2010
