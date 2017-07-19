@@ -39,6 +39,55 @@ oneStepH98 hh nablaQ nablaP prev = V2 qNew pNew
 --      
 --   \[   q'' = f(q) \]
 --
+-- <<diagrams/src_Math_Integrators_StormerVerlet_mySquare.svg#diagram=mySquare&height=300&width=200>>
+--
+-- > mySquare = square 1 # fc blue # myTransf
+-- > myTransf = rotateBy (1/27)
+--
+-- For example, for the \(n\)-body problem, the Hamiltonian is
+--
+-- \[
+-- {\mathbb H} = \frac{1}{2}\sum_{i=0}^n \frac{p_i^\top p_i}{m_i} - \frac{G}{2}\sum_{i=0}^n\sum_{j \neq i} \frac{m_i m_j}{\|q_i - q_j\|}
+-- \]
+--
+-- Apply Hamilton's equations will give us \(2n\) first order
+-- equations. To use 'stormerVerlet2' we need \(n\) second order
+-- equations. In this case, the Lagrangian is easy
+--
+-- \[
+-- {\mathcal{L}} = \frac{1}{2}\sum_{i=0}^n \frac{p_i^\top p_i}{m_i} + \frac{G}{2}\sum_{i=0}^n\sum_{j \neq i} \frac{m_i m_j}{\|q_i - q_j\|}
+-- \]
+--
+-- Applying Lagrange's equation
+--
+-- \[
+-- \frac{\mathrm{d}}{\mathrm{d}t}\bigg(\frac{\partial{\mathcal{L}}}{\partial\dot{q}_j}\bigg) = \frac{\partial{\mathcal{L}}}{\partial{q}_j}
+-- \]
+--
+-- gives
+--
+-- \[
+-- m_j\ddot{q}_j = G\sum_{k \neq j}m_k m_j \frac{q_k - q_j}{\|q_k - q_j\|^3}
+-- \]
+--
+-- For \(n = 2\) this gives
+--
+-- \[
+-- \begin{aligned}
+-- m_1\ddot{q}_1 &= G\frac{q_1 - q_2}{\|q_1 - q_2\|^3} \\
+-- m_2\ddot{q}_2 &= G\frac{q_2 - q_1}{\|q_2 - q_1\|^3}
+-- \end{aligned}
+-- \]
+--
+-- > kepler :: L.V2 (L.V3 Double) -> L.V2 (L.V3 Double)
+-- > kepler (L.V2 q1 q2) =
+-- >     let r  = q2 L.^-^ q1          -- q2 - q1
+-- >         ri = r `L.dot` r          -- ||q2-q1||^2
+-- >         rr = ri * (sqrt ri)
+-- >         q1' = r / pure rr
+-- >         q2' = negate q1'
+-- >     in L.V2 q1' q2'
+--
 stormerVerlet2 :: (Applicative f, Num (f a), Fractional a)
                => (f a -> f a)              -- ^ function f
                -> a
