@@ -1,4 +1,6 @@
 {-# LANGUAGE NegativeLiterals #-}
+{-# LANGUAGE TypeFamilies     #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 {-# OPTIONS_GHC -Wall         #-}
 
@@ -20,15 +22,24 @@ import Diagrams.Backend.CmdLine
 import Diagrams.Backend.Rasterific.CmdLine
 import Codec.Picture.Gif
 
+import Control.Monad
+import Control.Monad.State.Class
+
 import Plots
 
 
 myaxis :: Axis B V2 Double
 myaxis = r2Axis &~ do
   linePlot' $ map unp2 $ take 200 morePts
+  addPlotable' ((square 1 :: Diagram B) # fc blue)
 
 jSaxis :: Axis B V2 Double
 jSaxis = r2Axis &~ do
+  addPlotable' ((circle 1e11 :: Diagram B) # fc yellow)
+  let l = length preMorePts'
+  let os = [0.05,0.1..]
+  let ps = take (l `div` 4) [0,4..]
+  zipWithM_ addPoint os (map (preMorePts'!!) ps)
   linePlot' $ map unp2 $ take 200 morePts'
 
 myaxis' :: Int -> Axis B V2 Double
@@ -92,9 +103,9 @@ displayHeader' fn =
 
 main :: IO ()
 main = do
-  displayHeader' "other/plot-line.png" (renderAxis myaxis # bg white)
+  -- displayHeader' "other/plot-line.png" (renderAxis myaxis # bg white)
   displayHeader' "other/jupiter-sun-line.png" (renderAxis jSaxis # bg white)
-  displayHeader "other/anim-line.gif" $ zip (map (bg white . renderAxis . myaxis') [0..80]) (repeat 10)
+  -- displayHeader "other/anim-line.gif" $ zip (map (bg white . renderAxis . myaxis') [0..80]) (repeat 10)
   putStrLn "Finished"
 
 gConst :: Double
@@ -126,7 +137,7 @@ sunQ :: [Double]
 sunQ = [0.0, 0.0, 0.0]
 
 tm' :: V.Vector Double
-tm' = V.enumFromStepN 0 (100 * 24 * 36 * 36) 100
+tm' = V.enumFromStepN 0 (100 * 24 * 60 * 60) 44
 
 kepler' :: L.V2 (L.V3 Double) -> L.V2 (L.V3 Double)
 kepler' (L.V2 q1 q2) =
@@ -143,9 +154,8 @@ listToV3 :: [a] -> L.V3 a
 listToV3 [x, y, z] = fromV . fromJust . fromVector . V.fromList $ [x, y, z]
 listToV3 xs = error $ "Only supply 3 elements not: " ++ show (length xs)
 
--- FIXME: Why the velocities and not the momenta?
 initPQs' :: L.V2 (L.V2 (L.V3 Double))
-initPQs' = L.V2 (L.V2 ({- pure jupiterMass * -} listToV3 jupiterV) ({- pure sunMass * -} listToV3 sunV))
+initPQs' = L.V2 (L.V2 (listToV3 jupiterV) (listToV3 sunV))
                 (L.V2 (listToV3 jupiterQ) (listToV3 sunQ))
 
 result1' :: V.Vector (L.V2 (L.V2 (L.V3 Double)))
@@ -156,6 +166,10 @@ preMorePts' = map (\(L.V2 _ (L.V2 (L.V3 x y _z) _)) -> (x,y))  (V.toList result1
 
 morePts' :: [P2 Double]
 morePts' = map p2 $ preMorePts'
+
+addPoint :: (Plotable (Diagram B) b, MonadState (Axis b V2 Double) m) =>
+            Double -> (Double, Double) -> m ()
+addPoint o (x, y) = addPlotable' ((circle 1e11 :: Diagram B) # fc brown # opacity o # translate (r2 (x, y)))
 
 norePts' :: [P2 Double]
 norePts' = map p2 $ map (\(L.V2 _ (L.V2 _ (L.V3 x y _z))) -> (x,y))  (V.toList result1')
