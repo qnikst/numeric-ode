@@ -31,10 +31,10 @@ library
     Math.Integrators.SympleticEuler
     Math.Integrators.StormerVerlet
     Math.Integrators.StormerVerletAlt
+    Math.Integrators.Internal
+    Math.Integrators.Implicit
     -- XXX: disabled for the first release
     -- Math.Integrators.RK
-    -- Math.Integrators.Implicit
-    -- Math.Integrators.Internal
     -- Math.Integrators.RK.Internal
     -- Math.Integrators.RK.Parser
     -- Math.Integrators.RK.Template
