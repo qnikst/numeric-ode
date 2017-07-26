@@ -1,7 +1,7 @@
 name:                numeric-ode
 version:             0.0.0.0
 synopsis:            Ode solvers
-description:         Some ode solvers, e.g., Störmer-Verlet
+description:         Collection of the ODE solvers, e.g., Störmer-Verlet
 homepage:            https://github.com/qnikst/numeric-ode
 license:             BSD3
 license-file:        LICENSE
