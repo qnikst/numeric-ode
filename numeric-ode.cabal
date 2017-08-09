@@ -32,23 +32,20 @@ library
     Math.Integrators.StormerVerletAlt
     Math.Integrators.Internal
     Math.Integrators.Implicit
-    -- XXX: disabled for the first release
-    -- Math.Integrators.RK
-    -- Math.Integrators.RK.Internal
-    -- Math.Integrators.RK.Parser
-    -- Math.Integrators.RK.Template
-    -- Math.Integrators.RK.Types
+    Math.Integrators.RK
+    Math.Integrators.RK.Internal
+    Math.Integrators.RK.Template
+    Math.Integrators.RK.Types
 
-  ghc-options:         -Wall
+  ghc-options:         -Wall -Werror
   -- other-modules:
   build-depends:       base>=4 && <5,
                        vector>=0.9 && <0.13,
                        parallel>=3.2 && <3.3,
                        primitive>=0.4 && <0.7,
                        linear>=1.20 && <1.21,
-                       lens>=4 && <5
-                       -- XXX: disabled for the first release
-                       -- template-haskell,
+                       lens>=4 && <5,
+                       template-haskell
 
   other-extensions:    TypeFamilies
                        FlexibleContexts

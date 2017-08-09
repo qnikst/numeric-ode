@@ -5,7 +5,6 @@ module Math.Integrators.ImplicitEuler
 import Linear
 
 import Math.Integrators.Implicit
-import Math.Integrators.Internal
 
 eps :: Floating a => a
 eps = 1e-14

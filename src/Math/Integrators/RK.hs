@@ -1,12 +1,12 @@
 {-# LANGUAGE TemplateHaskell, FlexibleContexts #-}
-{-# OPTIONS_GHC -Wwarn #-}
+{-# OPTIONS_GHC -Werror -Wall #-}
 -- | Runge-Kutta module 
 --   TODO: add description and history notes
 --   add informations about methods properties
 module Math.Integrators.RK
     ( -- * explicit methods
---      rk45
---    , rk46
+      rk45
+    , rk46
 --      -- * implicit methods
 --    , gauss4
 --    , gauss6
@@ -15,14 +15,11 @@ module Math.Integrators.RK
 --    , lobattoIIIB4
     ) where
 
--- import Linear
+import Linear
 
 import Math.Integrators.RK.Template
--- import Math.Integrators.RK.Types
--- import Math.Integrators.Internal
--- import Math.Integrators.Implicit
 
--- | Runge-Kutta 
+-- | Runge-Kutta method of the forth order
 -- @
 -- 0   |
 -- 0.5 | 0.5
@@ -31,6 +28,7 @@ import Math.Integrators.RK.Template
 -- - - + - - - - - - - - 
 --     | 1/6 & 2/6 & 2/6 & 1/6
 -- @
+rk45 :: (Num (f a), Applicative f, Additive f, Fractional a) => (a -> f a -> f a) -> a -> a -> f a -> f a
 rk45 = $(generateRK [[0::Double]
                     ,[0.5, 0.5]
                     ,[0.5, 0  , 0.5]
@@ -38,18 +36,24 @@ rk45 = $(generateRK [[0::Double]
                     ,    [ 1/6,2/6,2/6,1/6]
                     ])
 
-{-
-rk46 :: (VectorSpace a, Floating (Scalar a)) => (Double -> a -> a) -> Integrator (Double,a)
-rk46 = [qrk|
-0   |
-1/3 |  1/3
-2/3 | -1/3 & 1
-1   |  1   & -1  & 1
-- - + - - - - - - - - 
-    | 1/8  & 3/8 & 3/8 & 1/8
-|]
+-- | Runge-Kutta method of the forth order
+-- @
+-- 0   |
+-- 1/3 |  1/3
+-- 2/3 | -1/3  & 1
+-- 1   |  1    & -1  & 1
+-- - - + - - - - - - - - 
+--     | 1/8 & 3/8 & 3/8 & 1/8
+-- @
+rk46 :: (Num (f a), Applicative f, Additive f, Fractional a) => (a -> f a -> f a) -> a -> a -> f a -> f a
+rk46 = $(generateRK [ [0::Double]
+                    , [1/3,  1/3]
+                    , [2/3, -1/3, 1]
+                    , [  1,    1, -1,  1]
+                    ,     [1/8, 3/8, 3/8, 1/8]
+                    ])
 
-
+{- Implicit methods are not supported yet.
 gauss4 :: (VectorSpace a, Floating (Scalar a)) => (ImplicitRkType (a,a)) -> (Double -> a -> a) -> Integrator (Double,a)
 gauss4 = [qrk|
 0.5 - sqrt(3)/6 | 0.25 & 0.25 - sqrt(3)/6

@@ -24,7 +24,6 @@ module Math.Integrators.Implicit
 -- TODO: add Newton iterations
 
 import Linear
-import Control.Lens
 
 -- | Implicit solver type
 type ImplicitSolver a = (a -> a)                    -- ^ implicit method
