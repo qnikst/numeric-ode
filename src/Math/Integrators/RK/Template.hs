@@ -38,6 +38,7 @@ module Math.Integrators.RK.Template
 
 import Language.Haskell.TH.Syntax
 import Language.Haskell.TH
+import Linear
 
 newVar :: String -> Q (Name, ExpQ, PatQ)
 newVar s = do
