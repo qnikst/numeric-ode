@@ -10,9 +10,9 @@ import Math.Integrators.Implicit
 eps :: Floating a => a
 eps = 1e-10
 
-sympleticEuler1 :: (Metric f, Num (f a), Floating a, Ord a)
+sympleticEuler1 :: (Metric f, Floating a, Ord a)
                 => (f a -> f a -> f a)
-                -> (f a -> f a -> f a) 
+                -> (f a -> f a -> f a)
                 -> a                     -- ^ Step size
                 -> V2 (f a)              -- ^ Current \((p,q)\) as a 2-dimentional vector
                 -> V2 (f a)              -- ^ New \((p, q)\) as a 2-dimetional vector

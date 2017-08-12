@@ -60,7 +60,7 @@ breakNormR eps y =  abs y < eps
 -- | same as @breakNormR@ but assume that inner type is an
 -- instance of InnerField, so it's possible to use innerproduct to find norm
 -- N.B function uses $||v||^2 < eps$, so epsilon should be pre evaluated
-breakNormIR :: (Metric f, Floating a, Ord a, Num (f a)) => f a -> a -> Bool
+breakNormIR :: (Metric f, Floating a, Ord a) => f a -> a -> Bool
 breakNormIR v eps = quadrance v < eps
 
 
