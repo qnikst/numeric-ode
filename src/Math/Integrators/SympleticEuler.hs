@@ -1,4 +1,6 @@
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 -- |
 -- For partitioned systems
 --
@@ -15,28 +17,21 @@ module Math.Integrators.SympleticEuler
 
 import Linear
 import Control.Lens
-
+import Data.Functor.Compose
 import Math.Integrators.Implicit
-
-eps :: Floating a => a
-eps = 1e-10
-
+import Math.Integrators.ExplicitEuler
+import Math.Integrators.ImplicitEuler
 
 -- |
 --
-sympleticEuler1 :: (Metric f, Floating a, Ord a)
+sympleticEuler1 :: forall f a  . (Metric f, Floating a)
                 => (f a -> f a -> f a)
                 -> (f a -> f a -> f a)
-                -> a                     -- ^ Step size
-                -> V2 (f a)              -- ^ Current \((p,q)\) as a 2-dimentional vector
-                -> V2 (f a)              -- ^ New \((p, q)\) as a 2-dimetional vector
-sympleticEuler1 f g = \h prev ->
-        -- explicit coordinate
-    let u' = (prev^._x) ^+^  h *^ (f (prev^._x) v')
-        -- implicit coordinate
-        v' = fixedPoint (\x -> (prev^._y) ^+^ h *^ (g (prev^._x) x))
-                        (\x1 x2 -> breakNormIR (x1^-^x2) eps) (prev^._x)
-    in V2 u' v'
+                -> Implicit (Compose V2 f) a
+sympleticEuler1 a b = \h (Compose p) (Compose p') ->
+  let u' = explicitEuler (\t -> a (p^._x) t) h (p^._y) :: f a
+      v' = implicitEuler (\t -> b (p^._x) t) h (p^._y) (p'^._y) :: f a
+  in Compose $ V2 u' v'
 
 {-
 sEuler2 :: ((a->a->a),(a->a->a)) -> Double -> (a,a) -> (a,a)

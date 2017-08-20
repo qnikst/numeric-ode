@@ -7,12 +7,6 @@ import Linear
 
 import Math.Integrators.Implicit
 
-eps :: Floating a => a
-eps = 1e-14
-
-imr :: (Metric f, Floating a, Ord a)
-    => (f a -> f a) -> a -> f a -> f a
-imr f = \h y ->
-  fixedPoint (\x -> y ^+^ h *^ ( f ( (y^+^x)^/2) ))
-             (\x1 x2 -> breakNormIR (x1 ^-^ x2) eps)
-             y
+imr :: (Metric f, Floating a)
+    => (f a -> f a) -> Implicit f a
+imr f = \h x0 x1 -> x0 ^+^ h *^ f((x0 ^+^ x1) ^/ 2)
