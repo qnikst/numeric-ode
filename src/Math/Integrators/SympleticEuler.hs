@@ -1,4 +1,15 @@
 {-# LANGUAGE FlexibleContexts #-}
+-- |
+-- For partitioned systems
+--
+-- \[
+--    \begin{array}{ccc}
+--      \dot{u} & = & a(u,v) \\
+--      \dot{v} & = & b(u,v)
+--    \end{array}
+-- \]
+-- we can treat one variable by the implicit method and the other variable by the explicit
+-- euler method.
 module Math.Integrators.SympleticEuler
     where
 
@@ -10,6 +21,9 @@ import Math.Integrators.Implicit
 eps :: Floating a => a
 eps = 1e-10
 
+
+-- |
+--
 sympleticEuler1 :: (Metric f, Floating a, Ord a)
                 => (f a -> f a -> f a)
                 -> (f a -> f a -> f a)

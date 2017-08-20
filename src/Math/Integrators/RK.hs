@@ -1,10 +1,10 @@
 {-# LANGUAGE TemplateHaskell, FlexibleContexts #-}
 {-# OPTIONS_GHC -Werror -Wall #-}
--- | Runge-Kutta module 
+-- | Runge-Kutta module
 --   TODO: add description and history notes
 --   add informations about methods properties
 module Math.Integrators.RK
-    ( -- * explicit methods
+    ( -- * Explicit methods
       rk45
     , rk46
 --      -- * implicit methods
@@ -20,14 +20,17 @@ import Linear
 import Math.Integrators.RK.Template
 
 -- | Runge-Kutta method of the forth order
--- @
--- 0   |
--- 0.5 | 0.5
--- 0.5 | 0   & 0.5
--- 1   | 0   & 0   & 1
--- - - + - - - - - - - - 
---     | 1/6 & 2/6 & 2/6 & 1/6
--- @
+--
+-- \[
+-- \begin{array}{c|ccc}
+-- 0   &    \\
+-- 0.5 & 0.5 \\
+-- 0.5 & 0   & 0.5 \\
+--  1  & 0   & 0   & 1 \\
+-- \hline
+--     & 1/6 & 2/6 & 2/6 & 1/6
+-- \end{array}
+-- \]
 rk45 :: (Num (f a), Applicative f, Additive f, Fractional a) => (a -> f a -> f a) -> a -> a -> f a -> f a
 rk45 = $(generateRK [[0::Double]
                     ,[0.5, 0.5]
@@ -37,14 +40,17 @@ rk45 = $(generateRK [[0::Double]
                     ])
 
 -- | Runge-Kutta method of the forth order
--- @
--- 0   |
--- 1/3 |  1/3
--- 2/3 | -1/3  & 1
--- 1   |  1    & -1  & 1
--- - - + - - - - - - - - 
---     | 1/8 & 3/8 & 3/8 & 1/8
--- @
+--
+-- \[
+-- \begin{array}{c|ccc}
+-- 0   \\
+-- 1/3 &  1/3 \\
+-- 2/3 & -1/3  & 1 \\
+-- 1   &  1    & -1  & 1 \\
+-- \hline
+--     & 1/8   & 3/8 & 3/8 & 1/8
+-- \end{array}
+-- \]
 rk46 :: (Num (f a), Applicative f, Additive f, Fractional a) => (a -> f a -> f a) -> a -> a -> f a -> f a
 rk46 = $(generateRK [ [0::Double]
                     , [1/3,  1/3]
@@ -58,7 +64,7 @@ gauss4 :: (VectorSpace a, Floating (Scalar a)) => (ImplicitRkType (a,a)) -> (Dou
 gauss4 = [qrk|
 0.5 - sqrt(3)/6 | 0.25 & 0.25 - sqrt(3)/6
 0.5 + sqrt(3)/6 | 0.25 + sqrt(3)/6 & 1/4
-- - - - - - - - + - - - - - - - - - - - 
+- - - - - - - - + - - - - - - - - - - -
                 | 0.5     & 0.5
 |]
 
@@ -76,7 +82,7 @@ lobattoIIIA4 = [qrk|
 0   |  0   &   0  & 0
 0.5 | 5/24 & 1/3  & -1/24
 1   | 1/6  & 2/3  & 1/6
-- - + - - - - - - - - - - 
+- - + - - - - - - - - - -
     | 1/6  & 2/3  & 1/6
 |]
 

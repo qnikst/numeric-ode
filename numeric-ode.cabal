@@ -1,5 +1,5 @@
 name:                numeric-ode
-version:             0.0.0.1
+version:             0.0.0.2
 synopsis:            Ode solvers
 description:         Collection of the ODE solvers, e.g., Störmer-Verlet
 homepage:            https://github.com/qnikst/numeric-ode
